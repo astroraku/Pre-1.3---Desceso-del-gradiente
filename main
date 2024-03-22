@@ -1,0 +1,68 @@
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+from IPython import display
+
+def plot_contour(f, x, xl, xu):
+    plt.clf()
+    X = np.arange(xl[0], xu[0], 0.1)
+    Y = np.arange(xl[1], xu[1], 0.1)
+    X, Y = np.meshgrid(X, Y)
+
+    plt.contourf(X, Y, f(X,Y))
+    plt.title("Contour")
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.plot(x[0], x[1], marker="o", c='r', markersize=10, label='Óptimo')
+    plt.legend()
+    plt.pause(0.05)
+    display.clear_output(wait=True)  # Borra el gráfico antes de mostrar el siguiente
+
+def plot_surf(f, x, xl, xu):
+    plt.clf()
+    X = np.arange(xl[0], xu[0], 0.1)
+    Y = np.arange(xl[1], xu[1], 0.1)
+    X, Y = np.meshgrid(X, Y)
+    Z = f(X, Y)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, alpha=0.8, linewidth=0)
+    ax.set_title('Surf')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    ax.scatter(x[0], x[1], f(x[0],x[1]), c='r', label='Óptimo', s=120)
+    ax.legend()
+
+# Funcion objetivo
+def F(x, y):
+    return 10 - np.exp(-((x**2) + 3*(y**2)))
+
+def grad_F(x, y):
+    grad_x = 2 * x * np.exp(-(x**2) - 3 * (y**2))
+    grad_y = 6 * y * np.exp(-(x**2) - 3 * (y**2))
+    return np.array([grad_x, grad_y])
+
+def gradient_descent(f, grad_f, xl, xu, lr, max_iter=30):
+    xi = np.random.uniform(low=xl, high=xu)
+    for i in range(max_iter):
+        gradient = grad_f(xi[0], xi[1])
+        xi = xi - lr * gradient
+        plot_contour(F, xi, xl, xu)
+    return xi
+
+# Limites
+xl = [-1, -1]
+xu = [1, 1]
+
+# Learning rate
+lr = 0.1  
+
+xi = gradient_descent(F, grad_F, xl, xu, lr)
+
+plot_contour(F, xi, xl, xu)
+plot_surf(F, xi, xl, xu)
+plt.show()
+print("Mínimo global en:", xi)
